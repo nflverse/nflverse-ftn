@@ -26,5 +26,5 @@ Remotes:
   nflversedata=nflverse/nflverse-data,
   nflreadr=nflverse/nflreadr,
   piggyback=ropensci/piggyback
-URL: https://github.com/nflverse/nflverseftn
-BugReports: https://github.com/nflverse/nflverseftn/issues
+URL: https://github.com/nflverse/nflverse-ftn
+BugReports: https://github.com/nflverse/nflverse-ftn/issues
