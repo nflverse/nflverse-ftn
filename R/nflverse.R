@@ -1,0 +1,101 @@
+#' Get nflverse data
+#'
+#' Retrieves FTN-provided nflverse-specific data
+#'
+#' @param gid,year,week args to specify games to return
+#'
+#' @export
+ftn_nflverse <- function(gid = NULL, year = NULL, week = NULL){
+  stopifnot(
+    !is.null(gid) || (!is.null(year) && !is.null(week)),
+    is.null(year) || is.numeric(year),
+    is.null(week) || is.numeric(week),
+    nzchar(Sys.getenv("FTN_NFLVERSE_ENDPOINT"))
+  )
+
+  endpoint <- Sys.getenv("FTN_NFLVERSE_ENDPOINT")
+
+  if(!is.null(gid)) {
+    df_game <- purrr::map(
+      gid,
+      purrr::possibly(\(gid) .ftn_request(endpoint = endpoint, gid = gid),otherwise = list()),
+      .progress = "Downloading ftn nflverse data") |>
+      data.table::rbindlist()
+  }
+
+  if (!is.null(year) && !is.null(week)){
+    params <- expand.grid(
+      year = year |> unique() |> sort(),
+      week = week |> unique() |> sort()
+    )
+
+    df_game <- purrr::map2(
+      params$year,
+      params$week,
+      \(y,w) try(.ftn_request(.endpoint = endpoint, year = y, week = w)),
+      .progress = "Downloading ftn nflverse data"
+    ) |>
+      data.table::rbindlist()
+  }
+
+  if(nrow(df_game) == 0) {
+    cli::cli_alert_warning("No data returned by API for provided parameters, exiting...")
+    return(invisible())
+  }
+
+  df_game_parsed <- df_game[
+    , lapply(.SD, function(x) replace(x, x == "", NA))
+  ][
+    , list(
+      ftn_game_id = as.integer(gid),
+      nflverse_game_id = game_id,
+      season = as.integer(year),
+      week = as.integer(week),
+
+      ftn_play_id = as.integer(pid),
+      nflverse_play_id = as.integer(play_id),
+
+      starting_hash = hash,
+      qb_location = qb_pos,
+      n_offense_backfield = as.integer(back),
+
+      is_no_huddle = as.integer(nh),
+      is_motion = as.integer(mot),
+
+      is_play_action = as.integer(pap),
+      is_screen_pass = as.integer(scre),
+      is_rpo = as.integer(rpo),
+      is_trick_play = as.integer(trick),
+
+      is_qb_out_of_pocket = as.integer(oop),
+      is_interception_worthy = as.integer(intw),
+      is_throw_away = as.integer(qbta),
+      read_thrown = read,
+
+      is_catchable_ball = as.integer(cball),
+      is_contested_ball = as.integer(cnb),
+      is_created_reception = as.integer(crr),
+      is_drop = as.integer(drp),
+      is_qb_sneak = as.integer(sneak),
+
+      n_blitzers = as.integer(blz),
+      n_pass_rushers = as.integer(pru),
+      is_qb_fault_sack = as.integer(qbsk),
+      NULL
+    )
+  ][
+    , purrr::map2(
+      .SD,
+      names(.SD),
+      \(col, nm) if(grepl("is_",nm)) return(as.logical(col)) else return(col)
+    )
+  ]
+
+  if(ncol(df_game_parsed) != ncol(df_game)) {
+    cli::cli_abort(
+      "Number of parsed columns ({ncol(df_game_parsed)}) does not match number of columns returned by API ({ncol(df_game)})"
+    )
+  }
+
+  return(df_game_parsed)
+}
