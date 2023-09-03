@@ -4,6 +4,8 @@
 #'
 #' @param gid,year,week args to specify games to return
 #'
+#' @seealso [FTN's data docs](https://docs.google.com/document/d/12WEm0O9TG7VQsn--fkCQAE_3735owJxfxZ8SvysceZU/edit)
+#'
 #' @export
 ftn_nflverse <- function(gid = NULL, year = NULL, week = NULL){
   stopifnot(

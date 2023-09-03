@@ -7,5 +7,5 @@
 ftn_schedule()
 }
 \description{
-Get Schedule
+Retrieves schedule and attaches nflverse game ID
 }
