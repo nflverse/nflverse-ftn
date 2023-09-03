@@ -83,6 +83,8 @@ ftn_nflverse <- function(gid = NULL, year = NULL, week = NULL){
       n_blitzers = as.integer(blz),
       n_pass_rushers = as.integer(pru),
       is_qb_fault_sack = as.integer(qbsk),
+
+      date_pulled = Sys.time(),
       NULL
     )
   ][
@@ -93,11 +95,46 @@ ftn_nflverse <- function(gid = NULL, year = NULL, week = NULL){
     )
   ]
 
-  if(ncol(df_game_parsed) != ncol(df_game)) {
-    cli::cli_abort(
-      "Number of parsed columns ({ncol(df_game_parsed)}) does not match number of columns returned by API ({ncol(df_game)})"
+  out <- data.table::rbindlist(
+    list(
+      .ftn_nflverse_template(),
+      df_game_parsed
     )
-  }
+  )
 
-  return(df_game_parsed)
+  return(out)
+}
+
+.ftn_nflverse_template <- function(){
+  data.table::data.table(
+    ftn_game_id = integer(0),
+    nflverse_game_id = character(0),
+    season = integer(0),
+    week = integer(0),
+    ftn_play_id = integer(0),
+    nflverse_play_id = integer(0),
+    starting_hash = character(0),
+    qb_location = character(0),
+    n_offense_backfield = integer(0),
+    is_no_huddle = logical(0),
+    is_motion = logical(0),
+    is_play_action = logical(0),
+    is_screen_pass = logical(0),
+    is_rpo = logical(0),
+    is_trick_play = logical(0),
+    is_qb_out_of_pocket = logical(0),
+    is_interception_worthy = logical(0),
+    is_throw_away = logical(0),
+    read_thrown = character(0),
+    is_catchable_ball = logical(0),
+    is_contested_ball = logical(0),
+    is_created_reception = logical(0),
+    is_drop = logical(0),
+    is_qb_sneak = logical(0),
+    n_blitzers = integer(0),
+    n_pass_rushers = integer(0),
+    is_qb_fault_sack = logical(0),
+    date_pulled = as.POSIXct(character(0)) |>
+      structure(tzone = NULL)
+  )
 }
