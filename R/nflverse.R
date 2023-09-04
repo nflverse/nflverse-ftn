@@ -42,7 +42,7 @@ ftn_nflverse <- function(gid = NULL, year = NULL, week = NULL){
 
   if(nrow(df_game) == 0) {
     cli::cli_alert_warning("No data returned by API for provided parameters, exiting...")
-    return(invisible())
+    return(invisible(.ftn_nflverse_template()))
   }
 
   df_game_parsed <- df_game[
