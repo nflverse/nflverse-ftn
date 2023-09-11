@@ -20,7 +20,7 @@ ftn_nflverse <- function(gid = NULL, year = NULL, week = NULL){
   if(!is.null(gid)) {
     df_game <- purrr::map(
       gid,
-      purrr::possibly(\(gid) .ftn_request(endpoint = endpoint, gid = gid),otherwise = list()),
+      \(gid) try(.ftn_request(.endpoint = endpoint, gid = gid)),
       .progress = "Downloading ftn nflverse data") |>
       data.table::rbindlist()
   }
