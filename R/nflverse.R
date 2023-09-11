@@ -60,6 +60,7 @@ ftn_nflverse <- function(gid = NULL, year = NULL, week = NULL){
       starting_hash = hash,
       qb_location = qb_pos,
       n_offense_backfield = as.integer(back),
+      n_defense_box = as.integer(box),
 
       is_no_huddle = as.integer(nh),
       is_motion = as.integer(mot),
@@ -116,6 +117,7 @@ ftn_nflverse <- function(gid = NULL, year = NULL, week = NULL){
     starting_hash = character(0),
     qb_location = character(0),
     n_offense_backfield = integer(0),
+    n_defense_box = integer(0),
     is_no_huddle = logical(0),
     is_motion = logical(0),
     is_play_action = logical(0),
