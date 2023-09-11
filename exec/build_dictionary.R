@@ -8,6 +8,7 @@ ftn_to_nflverse <- c(
   "starting_hash" = "hash",
   "qb_location" = "qb_pos",
   "n_offense_backfield" = "back",
+  "n_defense_box" = "box",
   "is_no_huddle" = "nh",
   "is_motion" = "mot",
   "is_play_action" = "pap",
