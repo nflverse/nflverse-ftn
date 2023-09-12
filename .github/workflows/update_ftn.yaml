@@ -3,7 +3,7 @@
 on:
   schedule:
     # every six hours
-    - cron: '* */6 * 9-12,1-2 *'
+    - cron: '0 */6 * 9-12,1-2 *'
   workflow_dispatch:
 
 name: Update FTN Data
