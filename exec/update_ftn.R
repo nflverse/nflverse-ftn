@@ -8,7 +8,8 @@ update_ftn <- function(){
   current_data <- nflreadr::rds_from_url("https://github.com/nflverse/nflverse-ftn/releases/download/raw/full_ftn_data.rds")
 
   games_to_update <- merge(
-    schedule[!is.na(updated), list(ftn_game_id, updated)],
+    # Game ID 6134 is 2022_17_BUF_CIN which was cancelled after Damar Hamlin’s cardiac arrest
+    schedule[!is.na(updated) & ftn_game_id != 6134, list(ftn_game_id, updated, season, week)],
     current_data[, list(ftn_game_id, date_pulled)] |> unique(),
     by = "ftn_game_id",
     all = TRUE
@@ -22,7 +23,12 @@ update_ftn <- function(){
   }
 
   cli::cli_alert_info("Found {nrow(games_to_update)} games to update")
-  new_games <- ftn_nflverse(gid = games_to_update$ftn_game_id)
+  # Using the gid query would be more efficient but in 2024 W1 the query stopped working
+  # and we were asked to switch over to the season,week query
+  new_games <- ftn_nflverse(year = games_to_update$season, week = games_to_update$week)
+
+  # ftn_nflverse expands a grid which could load more games than required.
+  new_games <- new_games[ftn_game_id %in% games_to_update$ftn_game_id]
 
   if(nrow(new_games) == 0) return(invisible(FALSE))
 
@@ -35,7 +41,7 @@ update_ftn <- function(){
 
   cli::cli_alert_info("Saving raw data")
   saveRDS(ftn_data, "exec/full_ftn_data.rds")
-  piggyback::pb_upload("exec/full_ftn_data.rds", repo = "nflverse/nflverse-ftn", tag = "raw")
+  nflversedata::nflverse_upload("exec/full_ftn_data.rds", repo = "nflverse/nflverse-ftn", tag = "raw")
 
   cli::cli_alert_info("Publishing updated data")
   ftn_data[season %in% new_games$season] |>
