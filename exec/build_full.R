@@ -4,7 +4,7 @@ schedule <- ftn_schedule()[!is.na(updated)]
 ftn_data <- ftn_nflverse(year = unique(schedule$season), week = unique(schedule$week))
 ftn_data <- nflreadr:::make_nflverse_data(ftn_data, nflverse_type = "Charting Data provided by FTNData.com")
 saveRDS(ftn_data, "exec/full_ftn_data.rds")
-piggyback::pb_upload("exec/full_ftn_data.rds", repo = "nflverse/nflverse-ftn", tag = "raw")
+nflversedata::nflverse_upload("exec/full_ftn_data.rds", repo = "nflverse/nflverse-ftn", tag = "raw")
 
 ftn_data |>
   split.data.frame(~season) |>
