@@ -13,6 +13,8 @@ jobs:
       GITHUB_PAT: ${{ secrets.NFLVERSE_GH_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: 'hearbeat'
       - name: Commit heartbeat
         run: |
           git config --local user.email "actions@github.com"
