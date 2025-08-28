@@ -9,7 +9,7 @@ on:
         default: false
         type: boolean
 
-name: Update FTN Data
+name: Update FTN Participation
 
 jobs:
   R-CMD-check:
