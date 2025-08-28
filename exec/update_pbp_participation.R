@@ -3,7 +3,7 @@ args <- commandArgs(trailingOnly = TRUE)
 update_pbp_participation <- function(season = nflreadr::most_recent_season()) {
   if (season < 2024) {
     cli::cli_alert_warning(
-      "Data not available to parse from FTN prior to the 2023 season. The data that exists in `load_participation()` for those seasons is solely from NGS and cannot be scraped again."
+      "Data not available to parse from FTN prior to the 2024 season. The data that exists in `load_participation()` for those seasons is solely from NGS and cannot be scraped again."
     )
     return(NULL)
   }
