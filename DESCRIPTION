@@ -23,7 +23,12 @@ Imports:
     qs,
     pkgload,
     piggyback,
-    data.table
+    data.table,
+    dplyr,
+    tidyr,
+    glue,
+    stringi,
+    tibble
 Remotes:
   nflversedata=nflverse/nflverse-data,
   nflreadr=nflverse/nflreadr
