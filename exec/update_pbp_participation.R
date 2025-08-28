@@ -1,9 +1,9 @@
 args <- commandArgs(trailingOnly = TRUE)
 
 update_pbp_participation <- function(season = nflreadr::most_recent_season()) {
-  if (season <= 2024) {
+  if (season < 2024) {
     cli::cli_alert_warning(
-      "Data not available to parse from FTN prior to the 2023 season. The data that exists in `load_participation()` for those seasons is solely from NGS and cannot be scraped again."
+      "Data not available to parse from FTN prior to the 2024 season. The data that exists in `load_participation()` for those seasons is solely from NGS and cannot be scraped again."
     )
     return(NULL)
   }
@@ -102,6 +102,12 @@ update_pbp_participation <- function(season = nflreadr::most_recent_season()) {
   plays <- plays |>
     dplyr::left_join(personnel, by = dplyr::join_by(gameId, nflplayid)) |>
     dplyr::mutate(
+      offense_formation = dplyr::case_when(
+        offense_formation == "P" ~ "PISTOL",
+        offense_formation == "S" ~ "SHOTGUN",
+        offense_formation == "U" ~ "UNDER CENTER",
+        TRUE ~ NA_character_
+      ),
       ngs_air_yards = NA_real_,
       route = stringi::stri_trans_toupper(
         gsub("[0-9]{1,} - ", "", route)
@@ -148,23 +154,23 @@ update_pbp_participation <- function(season = nflreadr::most_recent_season()) {
       offense_numbers,
       defense_numbers,
     )
+
+  current_participation <- nflreadr::load_participation(season)
+  if (nrow(current_participation)) {
+    plays <- current_participation |>
+      dplyr::rows_upsert(plays, by = c("nflverse_game_id", "play_id"))
+  }
+
+  cli::cli_process_start("Uploading participation data to nflverse-data")
+
+  nflversedata::nflverse_save(
+    data_frame = plays,
+    file_name = paste0("pbp_participation_", season),
+    nflverse_type = "Participation Data provided by FTNData.com",
+    file_types = c("rds", "parquet", "csv", "qs"),
+    release_tag = "pbp_participation"
+  )
 }
-
-current_participation <- nflreadr::load_participation(season)
-if (nrow(current_participation)) {
-  plays <- current_participation |>
-    dplyr::rows_upsert(plays, by = c("nflverse_game_id", "play_id"))
-}
-
-cli::cli_process_start("Uploading participation data to nflverse-data")
-
-nflversedata::nflverse_save(
-  data_frame = plays,
-  file_name = paste0("pbp_participation_", season),
-  nflverse_type = "Participation Data provided by FTNData.com",
-  file_types = c("rds", "parquet", "csv", "qs"),
-  release_tag = "pbp_participation"
-)
 
 cli::cli_process_done()
 
