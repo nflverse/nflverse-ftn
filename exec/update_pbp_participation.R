@@ -353,8 +353,6 @@ update_pbp_participation <- function(season) {
     release_tag = "pbp_participation"
   )
 
-  print("this worked but i didn't save anything yet!")
-
   cli::cli_process_done()
 }
 
