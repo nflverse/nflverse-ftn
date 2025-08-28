@@ -1,6 +1,6 @@
 args <- commandArgs(trailingOnly = TRUE)
 
-update_pbp_participation <- function(season) {
+update_pbp_participation <- function(season = nflreadr::most_recent_season()) {
   if (season < 2016) {
     cli::cli_alert_warning(
       "No participation data for {.val {season}} season. Abort."
