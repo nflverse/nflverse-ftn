@@ -1,9 +1,6 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
-  schedule:
-    # runs every day at 7:00 AM UTC
-    - cron:  '0 7 * 1,2,9,10,11,12 *'
   workflow_dispatch:
     inputs:
       full_rebuild:
