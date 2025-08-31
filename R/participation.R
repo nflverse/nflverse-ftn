@@ -27,8 +27,7 @@ ftn_participation <- function(season) {
   }
 
   ftn_data <- nflreadr::load_from_url(
-    "https://github.com/nflverse/nflverse-ftn/releases/download/raw/\\
-    full_ftn_data.rds"
+    "https://github.com/nflverse/nflverse-ftn/releases/download/raw/full_ftn_data.rds"
   )
 
   if (nrow(ftn_data) == 0L) {
