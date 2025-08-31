@@ -68,6 +68,6 @@ jobs:
           extra-repositories: 'https://nflverse.r-universe.dev'
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: nflverse/nflverse-data,
+          extra-packages: nflverse/nflverse-data, local::.
       - name: Release ${{ matrix.type }}
         run: Rscript exec/update_ftn_participation.R
