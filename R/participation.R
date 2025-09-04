@@ -20,7 +20,15 @@ ftn_participation <- function(season) {
       "https://github.com/nflverse/nflverse-ftn/releases/download/raw/",
       "ftn_participation_{season}.rds"
     )
-  )
+  ) |>
+    # raw data sometimes uses non nflverse team abbreviations. We normalise them
+    # here. We also remove new line characters esp. from desc
+    dplyr::mutate_if(
+      .predicate = is.character,
+      .funs = ~ team_name_fn(.x) |>
+        stringr::str_replace_all("[\r\n]", " ") |>
+        stringr::str_squish()
+    )
 
   if (nrow(raw_participation) == 0L) {
     cli::cli_abort("Failed to download {.val {season}} raw participation data!")
@@ -177,4 +185,22 @@ collapse_pos <- function(x) {
     tibble::enframe() |>
     (\(x) paste(x$value, x$name))() |>
     paste0(collapse = ", ")
+}
+
+team_name_fn <- function(var) {
+  stringr::str_replace_all(
+    var,
+    c(
+      "JAC" = "JAX",
+      "STL" = "LA",
+      "SL" = "LA",
+      "LAR" = "LA",
+      "ARZ" = "ARI",
+      "BLT" = "BAL",
+      "CLV" = "CLE",
+      "HST" = "HOU",
+      "SD" = "LAC",
+      "OAK" = "LV"
+    )
+  )
 }

@@ -28,6 +28,7 @@ Imports:
     tidyr,
     glue,
     stringi,
+    stringr,
     tibble
 Remotes:
   nflversedata=nflverse/nflverse-data,
