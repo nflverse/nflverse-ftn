@@ -1,31 +1,57 @@
-args <- commandArgs(trailingOnly = TRUE)
-
-update_pbp_participation <- function(season = nflreadr::most_recent_season()) {
-  if (season < 2024) {
-    cli::cli_alert_warning(
-      "Data not available to parse from FTN prior to the 2024 season. The data that exists in `load_participation()` for those seasons is solely from NGS and cannot be scraped again."
-    )
-    return(NULL)
-  }
-
-  plays <- nflreadr::load_from_url(
-    glue::glue(
-      "https://github.com/nflverse/nflverse-ftn/releases/download/raw/ftn_participation_{season}.rds"
-    )
+#' Load and parse ftn participation data
+#'
+#' The function takes season as argument and loads raw participation data from
+#' a nflverse-ftn release. We get data for completed seasons and release the raw
+#' file.
+#'
+#' @param season 4 digit season to load participation data for
+#'
+#' @returns A parsed dataframe
+#' @export
+ftn_participation <- function(season) {
+  season <- as.integer(season)
+  stopifnot(
+    "Only 2023+ seasons are supported" = season %in%
+      seq(2023, nflreadr::most_recent_season())
   )
+
+  raw_participation <- nflreadr::load_from_url(
+    glue::glue(
+      "https://github.com/nflverse/nflverse-ftn/releases/download/raw/",
+      "ftn_participation_{season}.rds"
+    )
+  ) |>
+    # raw data sometimes uses non nflverse team abbreviations. We normalise them
+    # here. We also remove new line characters esp. from desc
+    dplyr::mutate_if(
+      .predicate = is.character,
+      .funs = ~ team_name_fn(.x) |>
+        stringr::str_replace_all("[\r\n]", " ") |>
+        stringr::str_squish()
+    )
+
+  if (nrow(raw_participation) == 0L) {
+    cli::cli_abort("Failed to download {.val {season}} raw participation data!")
+  }
 
   ftn_data <- nflreadr::load_from_url(
     "https://github.com/nflverse/nflverse-ftn/releases/download/raw/full_ftn_data.rds"
   )
 
-  plays <- plays |>
+  if (nrow(ftn_data) == 0L) {
+    cli::cli_abort("Failed to download other ftn data!")
+  }
+
+  raw_participation <- raw_participation |>
     dplyr::left_join(
       ftn_data,
       by = dplyr::join_by(
         pid == ftn_play_id
       ),
       na_matches = "never"
-    ) |> # some plays are missing from `ftn_data`, so we use information from other games to grab this info
+    ) |>
+    # some plays are missing from `ftn_data`, so we use information from other
+    # games to grab this info
     dplyr::group_by(gameId) |>
     dplyr::mutate(
       nflverse_game_id = data.table::fcoalesce(
@@ -42,14 +68,7 @@ update_pbp_participation <- function(season = nflreadr::most_recent_season()) {
     ) |>
     dplyr::mutate(posteam = data.table::fcoalesce(posteam, ""))
 
-  collapse_pos <- function(x) {
-    table(x) |>
-      tibble::enframe() |>
-      (\(x) paste(x$value, x$name))() |>
-      paste0(collapse = ", ")
-  }
-
-  personnel <- plays |>
+  personnel <- raw_participation |>
     dplyr::filter(posteam != "") |>
     dplyr::select(
       gameId,
@@ -71,6 +90,9 @@ update_pbp_participation <- function(season = nflreadr::most_recent_season()) {
       delim = "_"
     ) |>
     tidyr::pivot_wider(id_cols = c(nflplayid, gameId, player_num, posteam)) |>
+    # remove NA IDs of player_num 23 and 24 (which are there for too many men
+    # penalties)
+    dplyr::filter(!is.na(gsisid)) |>
     dplyr::arrange(position) |>
     dplyr::group_by(
       gameId,
@@ -99,7 +121,7 @@ update_pbp_participation <- function(season = nflreadr::most_recent_season()) {
       .groups = "drop"
     )
 
-  plays <- plays |>
+  ftn_participation <- raw_participation |>
     dplyr::left_join(personnel, by = dplyr::join_by(gameId, nflplayid)) |>
     dplyr::mutate(
       offense_formation = dplyr::case_when(
@@ -152,30 +174,33 @@ update_pbp_participation <- function(season = nflreadr::most_recent_season()) {
       offense_positions,
       defense_positions,
       offense_numbers,
-      defense_numbers,
+      defense_numbers
     )
 
-  current_participation <- nflreadr::load_participation(season)
-  if (nrow(current_participation)) {
-    plays <- current_participation |>
-      dplyr::rows_upsert(plays, by = c("nflverse_game_id", "play_id"))
-  }
-
-  cli::cli_process_start("Uploading participation data to nflverse-data")
-
-  nflversedata::nflverse_save(
-    data_frame = plays,
-    file_name = paste0("pbp_participation_", season),
-    nflverse_type = "Participation Data provided by FTNData.com",
-    file_types = c("rds", "parquet", "csv", "qs"),
-    release_tag = "pbp_participation"
-  )
+  ftn_participation
 }
 
-cli::cli_process_done()
+collapse_pos <- function(x) {
+  table(x) |>
+    tibble::enframe() |>
+    (\(x) paste(x$value, x$name))() |>
+    paste0(collapse = ", ")
+}
 
-if (length(args) == 0) {
-  update_pbp_participation()
-} else if (args[1] == "ALL YEARS") {
-  purrr::walk(2024:nflreadr::most_recent_season(), update_pbp_participation)
+team_name_fn <- function(var) {
+  stringr::str_replace_all(
+    var,
+    c(
+      "JAC" = "JAX",
+      "STL" = "LA",
+      "SL" = "LA",
+      "LAR" = "LA",
+      "ARZ" = "ARI",
+      "BLT" = "BAL",
+      "CLV" = "CLE",
+      "HST" = "HOU",
+      "SD" = "LAC",
+      "OAK" = "LV"
+    )
+  )
 }

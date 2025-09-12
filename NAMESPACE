@@ -2,6 +2,7 @@
 
 export(.ftn_request)
 export(ftn_nflverse)
+export(ftn_participation)
 export(ftn_schedule)
 importFrom(data.table,":=")
 importFrom(data.table,.BY)
