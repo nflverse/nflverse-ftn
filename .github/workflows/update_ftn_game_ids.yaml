@@ -38,4 +38,4 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
 
       - name: Run FTN update script
-        run: Rscript exec/update_ftn_game_ids.R
+        run: Rscript exec/update_ftn_games.R
