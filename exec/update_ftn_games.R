@@ -5,7 +5,7 @@ update_ftn_game_ids <- function(){
   cli::cli_alert_info("Fetching FTN's game listing")
   schedule <- ftn_schedule()
   cli::cli_alert_info("Fetching previously pulled data")
-  current_data <- nflreadr::csv_from_url("https://github.com/nflverse/nflverse-ftn/releases/download/raw/ftn_game_id_mapping.csv")
+  current_data <- data.table::fread("https://github.com/nflverse/nflverse-ftn/releases/download/raw/ftn_game_id_mapping.csv")
 
   # grab nflverse_id <-> ftn_id mapping for 2022+ seasons
   game_ids <- schedule[
