@@ -33,5 +33,6 @@ Imports:
 Remotes:
   nflversedata=nflverse/nflverse-data,
   nflreadr=nflverse/nflreadr
+  qs=qsbase/qs
 URL: https://github.com/nflverse/nflverse-ftn
 BugReports: https://github.com/nflverse/nflverse-ftn/issues
