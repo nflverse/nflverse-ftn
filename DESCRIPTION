@@ -1,6 +1,6 @@
 Package: nflverseftn
 Title: Loads data from FTN Data
-Version: 1.1.0
+Version: 1.1.1
 Authors@R: c(
     person("Tan", "Ho", , "tan@tanho.ca", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0001-8388-5155")),
@@ -20,7 +20,6 @@ Imports:
     nflversedata,
     nflreadr,
     arrow,
-    qs,
     pkgload,
     piggyback,
     data.table,
@@ -32,7 +31,6 @@ Imports:
     tibble
 Remotes:
   nflversedata=nflverse/nflverse-data,
-  nflreadr=nflverse/nflreadr,
-  qs=qsbase/qs
+  nflreadr=nflverse/nflreadr
 URL: https://github.com/nflverse/nflverse-ftn
 BugReports: https://github.com/nflverse/nflverse-ftn/issues
