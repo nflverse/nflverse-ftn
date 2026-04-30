@@ -11,7 +11,7 @@ if (nrow(ftn_participation) > 0) {
     data_frame = ftn_participation,
     file_name = paste0("pbp_participation_", season),
     nflverse_type = "Participation Data provided by FTNData.com",
-    file_types = c("rds", "parquet", "csv", "qs"),
+    file_types = c("rds", "parquet", "csv"),
     release_tag = "pbp_participation"
   )
 }

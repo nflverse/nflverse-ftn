@@ -15,7 +15,7 @@ ftn_data |>
         file_name = paste0("ftn_charting_", .x$season[[1]]),
         nflverse_type = "Charting Data provided by FTNData.com",
         release_tag = "ftn_charting",
-        file_types = c("rds","parquet","csv","qs")
+        file_types = c("rds","parquet","csv")
       )
     }
   )
