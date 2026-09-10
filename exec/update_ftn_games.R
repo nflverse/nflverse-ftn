@@ -20,7 +20,7 @@ update_ftn_game_ids <- function(){
     return(invisible(FALSE))
   }
 
-  if (all(current_data$ftn_game_id %in% game_ids$ftn_game_id)){
+  if (all(game_ids$ftn_game_id %in% current_data$ftn_game_id)){
     cli::cli_alert_success("No new game IDs, exiting...")
     return(invisible(FALSE))
   }
