@@ -1,38 +1,39 @@
-# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   workflow_dispatch:
 
 name: Rebuild FTN Data
 
+permissions:
+  contents: read
+
 jobs:
-  R-CMD-check:
-    runs-on: ${{ matrix.config.os }}
-
-    name: ${{ matrix.config.os }} (${{ matrix.config.r }})
-
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          - {os: ubuntu-22.04,   r: 'release'}
-
-    env:
-      GITHUB_PAT: ${{ secrets.NFLVERSE_GH_TOKEN }}
-      FTN_API_KEY: ${{ secrets.FTN_API_KEY }}
-      FTN_NFLVERSE_ENDPOINT: ${{ secrets.FTN_NFLVERSE_ENDPOINT }}
-      R_KEEP_PKG_SOURCE: yes
-
+  rebuild:
+    name: Rebuild FTN data
+    runs-on: ubuntu-latest
+    # R + all dependencies preinstalled, see https://github.com/nflverse/actions
+    container: ghcr.io/nflverse/r-runner:latest
     steps:
-      - uses: actions/checkout@v6
-
-      - uses: r-lib/actions/setup-r@v2
+      # Checkout + nflverse packages at their latest commit + DESCRIPTION deps
+      - uses: nflverse/actions/setup@v1
         with:
-          r-version: ${{ matrix.config.r }}
-          http-user-agent: ${{ matrix.config.http-user-agent }}
-          use-public-rspm: true
+          packages: nflverse/nflverse-data nflverse/nflreadr
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      # write to the raw release here and ftn_charting in nflverse-data
+      # only. Valid for one hour.
+      # Minted after setup, which installs unpinned GitHub code.
+      - id: upload-token
+        uses: nflverse/actions/app-token@v1
+        with:
+          client-id: ${{ vars.NFLVERSE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.NFLVERSE_APP_PRIVATE_KEY }}
+          repositories: nflverse-ftn, nflverse-data
+          contents: write
 
-      - name: Run FTN rebuild script
+      - name: Rebuild FTN data
         run: Rscript exec/build_full.R
+        env:
+          # gh cli (nflversedata uploads) and piggyback
+          GH_TOKEN: ${{ steps.upload-token.outputs.token }}
+          GITHUB_PAT: ${{ steps.upload-token.outputs.token }}
+          FTN_API_KEY: ${{ secrets.FTN_API_KEY }}
+          FTN_NFLVERSE_ENDPOINT: ${{ secrets.FTN_NFLVERSE_ENDPOINT }}
